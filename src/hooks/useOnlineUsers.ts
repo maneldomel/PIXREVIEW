@@ -4,6 +4,9 @@ interface OnlineUser {
   id: string;
   timestamp: number;
   lastSeen: number;
+  currentStep?: number;
+  userName?: string;
+  evaluationsCount?: number;
 }
 
 export const useOnlineUsers = () => {
@@ -24,13 +27,23 @@ export const useOnlineUsers = () => {
       
       // Atualizar ou adicionar usuário atual
       const userIndex = activeUsers.findIndex(user => user.id === sessionId);
+      
+      // Buscar dados do usuário atual se disponível
+      const currentUserData = getCurrentUserData();
+      
       if (userIndex >= 0) {
         activeUsers[userIndex].lastSeen = currentTime;
+        if (currentUserData) {
+          activeUsers[userIndex].currentStep = currentUserData.currentStep;
+          activeUsers[userIndex].userName = currentUserData.userName;
+          activeUsers[userIndex].evaluationsCount = currentUserData.evaluationsCount;
+        }
       } else {
         activeUsers.push({
           id: sessionId,
           timestamp: currentTime,
-          lastSeen: currentTime
+          lastSeen: currentTime,
+          ...currentUserData
         });
       }
       
@@ -95,6 +108,42 @@ export const useOnlineUsers = () => {
   }, []);
 
   return onlineCount;
+};
+
+export const getActiveQuizUsers = (): OnlineUser[] => {
+  try {
+    const users = localStorage.getItem('pixreview-online-users');
+    const onlineUsers: OnlineUser[] = users ? JSON.parse(users) : [];
+    const currentTime = Date.now();
+    
+    // Filtrar usuários ativos nos últimos 30 segundos
+    return onlineUsers.filter(user => 
+      currentTime - user.lastSeen < 30000 && 
+      user.currentStep !== undefined &&
+      user.currentStep > 0
+    );
+  } catch {
+    return [];
+  }
+};
+
+const getCurrentUserData = () => {
+  try {
+    const currentStep = parseInt(localStorage.getItem('pixreview-current-step') || '0');
+    const userName = localStorage.getItem('pixreview-current-user-name') || '';
+    const evaluationsCount = parseInt(localStorage.getItem('pixreview-evaluations-count') || '0');
+    
+    if (currentStep > 0) {
+      return {
+        currentStep,
+        userName,
+        evaluationsCount
+      };
+    }
+    return null;
+  } catch {
+    return null;
+  }
 };
 
 const getOrCreateSessionId = (): string => {

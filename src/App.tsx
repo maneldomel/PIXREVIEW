@@ -213,8 +213,10 @@ function App() {
     if (!inputValue.trim()) return;
     
     setUserName(inputValue);
+    localStorage.setItem('pixreview-current-user-name', inputValue);
     setShowNamePopup(false);
     setCurrentStep(1);
+    localStorage.setItem('pixreview-current-step', '1');
     setInputValue('');
     
     // Criar ID único para o usuário
@@ -232,6 +234,7 @@ function App() {
   const handleVideoClick = () => {
     if (currentStep === 1) {
       setCurrentStep(2); // Ir para avaliação de produtos
+      localStorage.setItem('pixreview-current-step', '2');
     } else if (showVideoInterlude) {
       setShowVideoInterlude(false);
     }
@@ -253,6 +256,7 @@ function App() {
       const earnedValue = Math.random() * (180.50 - 120.20) + 120.20;
       setBalance(prev => prev + earnedValue);
       setEvaluationsCount(prev => prev + 1);
+      localStorage.setItem('pixreview-evaluations-count', (evaluationsCount + 1).toString());
       
       // Salvar avaliação
       const evaluationData = {
