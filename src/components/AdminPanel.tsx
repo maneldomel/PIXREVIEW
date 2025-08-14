@@ -394,6 +394,47 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
               className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                 activeSection === 'users'
                   ? 'bg-white text-blue-600 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Usuários
+            </button>
+            <button
+              onClick={() => setActiveSection('pixel')}
+              className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                activeSection === 'pixel'
+                  ? 'bg-white text-blue-600 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Facebook Pixel
+            </button>
+            <button
+              onClick={() => setActiveSection('vturb')}
+              className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                activeSection === 'vturb'
+                  ? 'bg-white text-blue-600 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Vídeos vturb
+            </button>
+            <button
+              onClick={() => setActiveSection('export')}
+              className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                activeSection === 'export'
+                  ? 'bg-white text-blue-600 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Exportar Dados
+            </button>
+          </div>
+        </div>
+
+        {/* Section Content */}
+        {activeSection === 'users' && (
+          <>
             {/* Users Table */}
             <div className="bg-white rounded-lg shadow overflow-hidden">
               <div className="px-6 py-4 border-b border-gray-200">
@@ -409,6 +450,18 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         WhatsApp
                       </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Data
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Avaliações
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Total Ganho
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Ações
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
@@ -419,6 +472,27 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {user.whatsapp || '-'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {new Date(user.timestamp).toLocaleDateString('pt-BR')}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {user.evaluations.length}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">
+                          R${user.totalEarned.toFixed(2)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                          <button
+                            onClick={() => {
+                              setSelectedUser(user);
+                              setShowUserDetails(true);
+                            }}
+                            className="text-blue-600 hover:text-blue-900 flex items-center space-x-1"
+                          >
+                            <Eye className="w-4 h-4" />
+                            <span>Ver</span>
+                          </button>
                         </td>
                       </tr>
                     ))}
@@ -434,6 +508,138 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
               )}
             </div>
           </>
+        )}
+
+        {activeSection === 'pixel' && (
+          <div className="bg-white rounded-lg shadow p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Configurações do Facebook Pixel</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  ID do Facebook Pixel
+                </label>
+                <input
+                  type="text"
+                  value={pixelSettings.facebookPixelId}
+                  onChange={(e) => setPixelSettings({ ...pixelSettings, facebookPixelId: e.target.value })}
+                  placeholder="Digite o ID do seu Facebook Pixel"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <button
+                onClick={savePixelSettings}
+                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+              >
+                Salvar Configurações
+              </button>
+            </div>
+          </div>
+        )}
+
+        {activeSection === 'vturb' && (
+          <div className="bg-white rounded-lg shadow p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Configurações dos Vídeos vturb</h3>
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Código do Vídeo de Boas-vindas
+                </label>
+                <textarea
+                  value={vturbSettings.welcomeVideoCode}
+                  onChange={(e) => setVturbSettings({ ...vturbSettings, welcomeVideoCode: e.target.value })}
+                  placeholder="Cole aqui o código do vídeo de boas-vindas do vturb"
+                  rows={4}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Código do Vídeo Explicativo
+                </label>
+                <textarea
+                  value={vturbSettings.explanationVideoCode}
+                  onChange={(e) => setVturbSettings({ ...vturbSettings, explanationVideoCode: e.target.value })}
+                  placeholder="Cole aqui o código do vídeo explicativo do vturb"
+                  rows={4}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Código do Vídeo Intermediário 1 (Relógios → Bolsas)
+                </label>
+                <textarea
+                  value={vturbSettings.interludeVideo1Code}
+                  onChange={(e) => setVturbSettings({ ...vturbSettings, interludeVideo1Code: e.target.value })}
+                  placeholder="Cole aqui o código do primeiro vídeo intermediário do vturb"
+                  rows={4}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Código do Vídeo Intermediário 2 (Bolsas → Tênis)
+                </label>
+                <textarea
+                  value={vturbSettings.interludeVideo2Code}
+                  onChange={(e) => setVturbSettings({ ...vturbSettings, interludeVideo2Code: e.target.value })}
+                  placeholder="Cole aqui o código do segundo vídeo intermediário do vturb"
+                  rows={4}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Código do Vídeo Intermediário 3 (Tênis → Final)
+                </label>
+                <textarea
+                  value={vturbSettings.interludeVideo3Code}
+                  onChange={(e) => setVturbSettings({ ...vturbSettings, interludeVideo3Code: e.target.value })}
+                  placeholder="Cole aqui o código do terceiro vídeo intermediário do vturb"
+                  rows={4}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <button
+                onClick={saveVturbSettings}
+                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+              >
+                Salvar Configurações
+              </button>
+            </div>
+          </div>
+        )}
+
+        {activeSection === 'export' && (
+          <div className="bg-white rounded-lg shadow p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Exportar Dados</h3>
+            <div className="space-y-4">
+              <div className="flex space-x-4">
+                <button
+                  onClick={exportData}
+                  className="flex items-center space-x-2 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors"
+                >
+                  <Download className="w-4 h-4" />
+                  <span>Exportar JSON</span>
+                </button>
+                <button
+                  onClick={exportTxtData}
+                  className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+                >
+                  <Download className="w-4 h-4" />
+                  <span>Exportar Relatório TXT</span>
+                </button>
+              </div>
+              <p className="text-sm text-gray-600">
+                Exporte os dados dos usuários em formato JSON para backup ou análise, ou como relatório em texto para leitura.
+              </p>
+            </div>
+          </div>
         )}
       </div>
 
@@ -477,7 +683,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
                         <div className="w-full bg-gray-200 rounded-full h-2">
                           <div 
                             className="bg-gradient-to-r from-blue-500 to-green-500 h-2 rounded-full transition-all duration-500"
-                            style={{ width: `${progressPercentage}%` }}
+                            style={{ width: \`${progressPercentage}%` }}
                           ></div>
                         </div>
                       </div>
@@ -512,7 +718,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
                   onClick={() => setShowUserDetails(false)}
                   className="text-gray-400 hover:text-gray-600"
                 >
-                  <EyeOff className="w-6 h-6" />
+                  <X className="w-6 h-6" />
                 </button>
               </div>
             </div>
