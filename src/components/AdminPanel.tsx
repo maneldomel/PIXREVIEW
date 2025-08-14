@@ -420,9 +420,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
                   <li>• Dados para otimização de campanhas</li>
                 </ul>
               </div>
-    </div>
-  );
-};
 
               <div className="flex space-x-3">
                 <button
@@ -442,4 +439,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
           </div>
         </div>
       )}
+    </div>
+  );
+};
+
 export default AdminPanel;
