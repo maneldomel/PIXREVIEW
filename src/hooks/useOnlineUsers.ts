@@ -18,6 +18,10 @@ export const useOnlineUsers = () => {
       const currentTime = Date.now();
       const { sessionId, ipAddress } = getOrCreateSessionId();
       
+      // Não contar admin como usuário no quiz
+      const isAdmin = window.location.search.includes('admin=true');
+      if (isAdmin) return;
+      
       // Buscar usuários online existentes
       const existingUsers = getOnlineUsers();
       

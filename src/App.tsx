@@ -366,9 +366,9 @@ function App() {
 
   const getVideoMessage = () => {
     const productIndex = currentProductIndex;
-    if (productIndex === 2) return `Boa, ${userName}! Agora vamos pra nossa sessão de bolsas exclusivas, tá pronta?`;
+    if (productIndex === 2) return `Boa, ${userName}! Agora vamos para nossa sessão de bolsas exclusivas!`;
     if (productIndex === 4) return `Perfeito, ${userName}! Agora chegou a hora dos tênis mais desejados!`;
-    if (productIndex === 6) return `Quase lá, ${userName}! Último produto pra você avaliar!`;
+    if (productIndex === 6) return `Quase lá, ${userName}! Últimos produtos para você avaliar!`;
     return `Vamos continuar, ${userName}!`;
   };
 
