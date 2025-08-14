@@ -7,6 +7,7 @@ interface OnlineUser {
   currentStep?: number;
   userName?: string;
   evaluationsCount?: number;
+  ipAddress?: string;
 }
 
 export const useOnlineUsers = () => {
@@ -15,7 +16,7 @@ export const useOnlineUsers = () => {
   useEffect(() => {
     const updateOnlineUsers = () => {
       const currentTime = Date.now();
-      const sessionId = getOrCreateSessionId();
+      const { sessionId, ipAddress } = getOrCreateSessionId();
       
       // Buscar usuários online existentes
       const existingUsers = getOnlineUsers();
@@ -25,6 +26,16 @@ export const useOnlineUsers = () => {
         currentTime - user.lastSeen < 30000
       );
       
+      // Verificar se já existe usuário com mesmo IP (apenas uma sessão por IP)
+      const existingIpUser = activeUsers.find(user => user.ipAddress === ipAddress);
+      
+      if (existingIpUser && existingIpUser.id !== sessionId) {
+        // Remover sessão anterior do mesmo IP
+        const filteredUsers = activeUsers.filter(user => user.ipAddress !== ipAddress);
+        activeUsers.length = 0;
+        activeUsers.push(...filteredUsers);
+      }
+      
       // Atualizar ou adicionar usuário atual
       const userIndex = activeUsers.findIndex(user => user.id === sessionId);
       
@@ -33,6 +44,7 @@ export const useOnlineUsers = () => {
       
       if (userIndex >= 0) {
         activeUsers[userIndex].lastSeen = currentTime;
+        activeUsers[userIndex].ipAddress = ipAddress;
         if (currentUserData) {
           activeUsers[userIndex].currentStep = currentUserData.currentStep;
           activeUsers[userIndex].userName = currentUserData.userName;
@@ -43,6 +55,7 @@ export const useOnlineUsers = () => {
           id: sessionId,
           timestamp: currentTime,
           lastSeen: currentTime,
+          ipAddress: ipAddress,
           ...currentUserData
         });
       }
@@ -146,13 +159,23 @@ const getCurrentUserData = () => {
   }
 };
 
-const getOrCreateSessionId = (): string => {
+const getOrCreateSessionId = (): { sessionId: string; ipAddress: string } => {
   let sessionId = sessionStorage.getItem('pixreview-session-id');
   if (!sessionId) {
     sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     sessionStorage.setItem('pixreview-session-id', sessionId);
   }
-  return sessionId;
+  
+  // Simular IP (em produção seria obtido do servidor)
+  let ipAddress = localStorage.getItem('pixreview-simulated-ip');
+  if (!ipAddress) {
+    // Gerar IP simulado único por dispositivo
+    const randomIp = `192.168.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`;
+    ipAddress = randomIp;
+    localStorage.setItem('pixreview-simulated-ip', ipAddress);
+  }
+  
+  return { sessionId, ipAddress };
 };
 
 const getOnlineUsers = (): OnlineUser[] => {

@@ -28,6 +28,18 @@ interface PixelSettings {
   facebookPixelId: string;
 }
 
+interface VturbSettings {
+  welcomeVideoCode: string;
+  explanationVideoCode: string;
+  interludeVideoCode: string;
+}
+
+interface FunnelData {
+  step: string;
+  users: number;
+  percentage: number;
+  dropRate?: number;
+}
 const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
   const [users, setUsers] = useState<UserData[]>([]);
   const onlineCount = useOnlineUsers();
@@ -35,8 +47,15 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
   const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
   const [showUserDetails, setShowUserDetails] = useState(false);
   const [showPixelSettings, setShowPixelSettings] = useState(false);
+  const [showVturbSettings, setShowVturbSettings] = useState(false);
+  const [showFunnelAnalysis, setShowFunnelAnalysis] = useState(false);
   const [pixelSettings, setPixelSettings] = useState<PixelSettings>({
     facebookPixelId: ''
+  });
+  const [vturbSettings, setVturbSettings] = useState<VturbSettings>({
+    welcomeVideoCode: '',
+    explanationVideoCode: '',
+    interludeVideoCode: ''
   });
 
   const handleLogout = () => {
@@ -64,6 +83,12 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
     const savedPixelSettings = localStorage.getItem('pixreview-pixel-settings');
     if (savedPixelSettings) {
       setPixelSettings(JSON.parse(savedPixelSettings));
+    }
+    
+    // Carregar configurações do vturb
+    const savedVturbSettings = localStorage.getItem('pixreview-vturb-settings');
+    if (savedVturbSettings) {
+      setVturbSettings(JSON.parse(savedVturbSettings));
     }
     
     return () => clearInterval(interval);
@@ -107,6 +132,81 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
     setShowPixelSettings(false);
   };
 
+  const saveVturbSettings = () => {
+    localStorage.setItem('pixreview-vturb-settings', JSON.stringify(vturbSettings));
+    
+    // Aplicar códigos vturb imediatamente
+    applyVturbCodes();
+    
+    alert('Configurações do vturb salvas com sucesso!');
+    setShowVturbSettings(false);
+  };
+
+  const applyVturbCodes = () => {
+    // Aplicar código do vídeo de boas-vindas
+    const welcomeContainer = document.getElementById('vturb-video-welcome');
+    if (welcomeContainer && vturbSettings.welcomeVideoCode) {
+      welcomeContainer.innerHTML = vturbSettings.welcomeVideoCode;
+    }
+    
+    // Aplicar código do vídeo explicativo
+    const explanationContainer = document.getElementById('vturb-video-explanation');
+    if (explanationContainer && vturbSettings.explanationVideoCode) {
+      explanationContainer.innerHTML = vturbSettings.explanationVideoCode;
+    }
+    
+    // Aplicar códigos dos vídeos intermediários
+    for (let i = 2; i <= 6; i += 2) {
+      const interludeContainer = document.getElementById(`vturb-video-interlude-${i}`);
+      if (interludeContainer && vturbSettings.interludeVideoCode) {
+        interludeContainer.innerHTML = vturbSettings.interludeVideoCode;
+      }
+    }
+  };
+
+  const getFunnelData = (): FunnelData[] => {
+    const totalUsers = users.length;
+    if (totalUsers === 0) return [];
+    
+    const usersWithName = users.filter(user => user.name).length;
+    const usersStartedQuiz = users.filter(user => user.evaluations.length > 0).length;
+    const usersCompleted = users.filter(user => user.evaluations.length >= 7).length;
+    const usersWithWhatsapp = users.filter(user => user.whatsapp).length;
+    
+    const funnelSteps: FunnelData[] = [
+      {
+        step: 'Visitantes',
+        users: totalUsers,
+        percentage: 100
+      },
+      {
+        step: 'Informaram Nome',
+        users: usersWithName,
+        percentage: totalUsers > 0 ? (usersWithName / totalUsers) * 100 : 0,
+        dropRate: totalUsers > 0 ? ((totalUsers - usersWithName) / totalUsers) * 100 : 0
+      },
+      {
+        step: 'Iniciaram Quiz',
+        users: usersStartedQuiz,
+        percentage: totalUsers > 0 ? (usersStartedQuiz / totalUsers) * 100 : 0,
+        dropRate: usersWithName > 0 ? ((usersWithName - usersStartedQuiz) / usersWithName) * 100 : 0
+      },
+      {
+        step: 'Completaram Quiz',
+        users: usersCompleted,
+        percentage: totalUsers > 0 ? (usersCompleted / totalUsers) * 100 : 0,
+        dropRate: usersStartedQuiz > 0 ? ((usersStartedQuiz - usersCompleted) / usersStartedQuiz) * 100 : 0
+      },
+      {
+        step: 'Finalizaram (WhatsApp)',
+        users: usersWithWhatsapp,
+        percentage: totalUsers > 0 ? (usersWithWhatsapp / totalUsers) * 100 : 0,
+        dropRate: usersCompleted > 0 ? ((usersCompleted - usersWithWhatsapp) / usersCompleted) * 100 : 0
+      }
+    ];
+    
+    return funnelSteps;
+  };
   const getTotalStats = () => {
     const totalUsersStarted = users.length;
     const totalEvaluations = users.reduce((sum, user) => sum + user.evaluations.length, 0);
@@ -320,6 +420,20 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-lg font-semibold text-gray-900">Dados dos Usuários</h2>
           <div className="flex space-x-3">
+            <button
+              onClick={() => setShowFunnelAnalysis(true)}
+              className="flex items-center space-x-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+            >
+              <span>📊</span>
+              <span>Análise de Funil</span>
+            </button>
+            <button
+              onClick={() => setShowVturbSettings(true)}
+              className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+            >
+              <span>🎥</span>
+              <span>Configurar vturb</span>
+            </button>
             <button
               onClick={() => setShowPixelSettings(true)}
               className="flex items-center space-x-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
