@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff, Users, Star, TrendingUp, Download, LogOut, DollarSign, MessageSquare, X } from 'lucide-react';
+import { useOnlineUsers } from '../hooks/useOnlineUsers';
 
 interface UserData {
   id: string;
@@ -31,6 +32,7 @@ interface PixelSettings {
 
 const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
   const [users, setUsers] = useState<UserData[]>([]);
+  const onlineCount = useOnlineUsers();
   const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
   const [showUserDetails, setShowUserDetails] = useState(false);
   const [showPixelSettings, setShowPixelSettings] = useState(false);
@@ -219,7 +221,21 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center">
+              <div className="p-2 bg-green-100 rounded-lg">
+                <div className="w-6 h-6 flex items-center justify-center">
+                  <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                </div>
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Usuários Online</p>
+                <p className="text-2xl font-bold text-green-600">{onlineCount}</p>
+              </div>
+            </div>
+          </div>
+
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center">
               <div className="p-2 bg-blue-100 rounded-lg">

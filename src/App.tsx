@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Send, Play, X, Star, Heart, Meh, ThumbsDown, SkipForward, DollarSign, Gift } from 'lucide-react';
 import AdminLogin from './components/AdminLogin';
 import AdminPanel from './components/AdminPanel';
+import OnlineUsersCounter from './components/OnlineUsersCounter';
 
 // Função para disparar evento do Facebook Pixel
 const trackFacebookPixelPurchase = (value: number, currency: string = 'BRL') => {
@@ -807,6 +808,9 @@ function App() {
           </div>
         </div>
       )}
+
+      {/* Contador de Usuários Online */}
+      {!showAdmin && <OnlineUsersCounter />}
     </div>
   );
 }
