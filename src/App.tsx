@@ -38,12 +38,43 @@ const loadFacebookPixel = () => {
           fbq('track', 'PageView');
         `;
         document.head.appendChild(script);
-        
-        // Adicionar noscript
-        const noscript = document.createElement('noscript');
-        noscript.innerHTML = `<img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=${settings.facebookPixelId}&ev=PageView&noscript=1" />`;
-        document.head.appendChild(noscript);
       }
+    }
+  }
+};
+
+// Carregar códigos vturb se configurado
+const loadVturbCodes = () => {
+  const vturbSettings = localStorage.getItem('pixreview-vturb-settings');
+  if (vturbSettings) {
+    const settings = JSON.parse(vturbSettings);
+    
+    // Aplicar código do vídeo de boas-vindas
+    const welcomeContainer = document.getElementById('vturb-video-welcome');
+    if (welcomeContainer && settings.welcomeVideoCode) {
+      welcomeContainer.innerHTML = settings.welcomeVideoCode;
+    }
+    
+    // Aplicar código do vídeo explicativo
+    const explanationContainer = document.getElementById('vturb-video-explanation');
+    if (explanationContainer && settings.explanationVideoCode) {
+      explanationContainer.innerHTML = settings.explanationVideoCode;
+    }
+    
+    // Aplicar códigos dos vídeos intermediários individuais
+    const interlude1Container = document.getElementById('vturb-video-interlude-2');
+    if (interlude1Container && settings.interludeVideo1Code) {
+      interlude1Container.innerHTML = settings.interludeVideo1Code;
+    }
+    
+    const interlude2Container = document.getElementById('vturb-video-interlude-4');
+    if (interlude2Container && settings.interludeVideo2Code) {
+      interlude2Container.innerHTML = settings.interludeVideo2Code;
+    }
+    
+    const interlude3Container = document.getElementById('vturb-video-interlude-6');
+    if (interlude3Container && settings.interludeVideo3Code) {
+      interlude3Container.innerHTML = settings.interludeVideo3Code;
     }
   }
 };
@@ -366,9 +397,9 @@ function App() {
 
   const getVideoMessage = () => {
     const productIndex = currentProductIndex;
-    if (productIndex === 2) return `Boa, ${userName}! Agora vamos para nossa sessão de bolsas exclusivas!`;
+    if (productIndex === 2) return `Boa, ${userName}! Agora vamos pra nossa sessão de bolsas exclusivas, tá pronta?`;
     if (productIndex === 4) return `Perfeito, ${userName}! Agora chegou a hora dos tênis mais desejados!`;
-    if (productIndex === 6) return `Quase lá, ${userName}! Últimos produtos para você avaliar!`;
+    if (productIndex === 6) return `Quase lá, ${userName}! Último produto pra você avaliar!`;
     return `Vamos continuar, ${userName}!`;
   };
 
