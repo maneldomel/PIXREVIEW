@@ -14,6 +14,24 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+  // Verificar se já está logado ao carregar
+  useEffect(() => {
+    const adminSession = localStorage.getItem('pixreview-admin-session');
+    if (adminSession) {
+      const session = JSON.parse(adminSession);
+      const now = Date.now();
+      
+      // Verificar se a sessão ainda é válida (24 horas)
+      if (now - session.timestamp < 24 * 60 * 60 * 1000) {
+        onLogin();
+        return;
+      } else {
+        // Sessão expirada, remover
+        localStorage.removeItem('pixreview-admin-session');
+      }
+    }
+  }, [onLogin]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -23,6 +41,13 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
     await new Promise(resolve => setTimeout(resolve, 1000));
 
     if (email === 'admin@pixreview.com' && password === 'dener1234' && accessKey === '7K9M2P5X8Q1W4R6T') {
+      // Salvar sessão no localStorage
+      const session = {
+        timestamp: Date.now(),
+        email: email
+      };
+      localStorage.setItem('pixreview-admin-session', JSON.stringify(session));
+      
       onLogin();
     } else {
       setError('Email, senha ou chave de acesso incorretos');

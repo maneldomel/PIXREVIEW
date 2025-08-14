@@ -40,6 +40,12 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
     facebookPixelId: ''
   });
 
+  const handleLogout = () => {
+    // Remover sessão do localStorage
+    localStorage.removeItem('pixreview-admin-session');
+    onLogout();
+  };
+
   useEffect(() => {
     // Carregar dados do localStorage
     const savedData = localStorage.getItem('pixreview-admin-data');
@@ -209,7 +215,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
               </h1>
             </div>
             <button
-              onClick={onLogout}
+              onClick={handleLogout}
               className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
             >
               <LogOut className="w-4 h-4" />

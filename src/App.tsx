@@ -360,6 +360,7 @@ function App() {
       return <AdminPanel onLogout={() => {
         setIsAdminLoggedIn(false);
         setShowAdmin(false);
+        // Limpar parâmetro da URL
         window.history.replaceState({}, document.title, window.location.pathname);
       }} />;
     }
