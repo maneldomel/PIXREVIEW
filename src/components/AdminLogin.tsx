@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff, DollarSign } from 'lucide-react';
 
 interface AdminLoginProps {
