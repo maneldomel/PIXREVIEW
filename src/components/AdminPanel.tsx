@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Eye, EyeOff, Users, Star, TrendingUp, Download, LogOut, DollarSign, MessageSquare } from 'lucide-react';
+import { Eye, EyeOff, Users, Star, TrendingUp, Download, LogOut, DollarSign, MessageSquare, X } from 'lucide-react';
 
 interface UserData {
   id: string;
@@ -25,10 +25,18 @@ interface AdminPanelProps {
   onLogout: () => void;
 }
 
+interface PixelSettings {
+  facebookPixelId: string;
+}
+
 const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
   const [users, setUsers] = useState<UserData[]>([]);
   const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
   const [showUserDetails, setShowUserDetails] = useState(false);
+  const [showPixelSettings, setShowPixelSettings] = useState(false);
+  const [pixelSettings, setPixelSettings] = useState<PixelSettings>({
+    facebookPixelId: ''
+  });
 
   useEffect(() => {
     // Carregar dados do localStorage
@@ -36,7 +44,51 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
     if (savedData) {
       setUsers(JSON.parse(savedData));
     }
+    
+    // Carregar configurações do pixel
+    const savedPixelSettings = localStorage.getItem('pixreview-pixel-settings');
+    if (savedPixelSettings) {
+      setPixelSettings(JSON.parse(savedPixelSettings));
+    }
   }, []);
+
+  const savePixelSettings = () => {
+    localStorage.setItem('pixreview-pixel-settings', JSON.stringify(pixelSettings));
+    
+    // Atualizar pixel no head se já existir
+    if (pixelSettings.facebookPixelId) {
+      // Remover pixel anterior se existir
+      const existingScript = document.getElementById('facebook-pixel-script');
+      if (existingScript) {
+        existingScript.remove();
+      }
+      
+      // Adicionar novo pixel
+      const script = document.createElement('script');
+      script.id = 'facebook-pixel-script';
+      script.innerHTML = `
+        !function(f,b,e,v,n,t,s)
+        {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+        n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+        if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+        n.queue=[];t=b.createElement(e);t.async=!0;
+        t.src=v;s=b.getElementsByTagName(e)[0];
+        s.parentNode.insertBefore(t,s)}(window, document,'script',
+        'https://connect.facebook.net/en_US/fbevents.js');
+        fbq('init', '${pixelSettings.facebookPixelId}');
+        fbq('track', 'PageView');
+      `;
+      document.head.appendChild(script);
+      
+      // Adicionar noscript
+      const noscript = document.createElement('noscript');
+      noscript.innerHTML = `<img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=${pixelSettings.facebookPixelId}&ev=PageView&noscript=1" />`;
+      document.head.appendChild(noscript);
+    }
+    
+    alert('Configurações do Facebook Pixel salvas com sucesso!');
+    setShowPixelSettings(false);
+  };
 
   const getTotalStats = () => {
     const totalUsers = users.length;
@@ -161,13 +213,22 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
         {/* Actions */}
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-lg font-semibold text-gray-900">Dados dos Usuários</h2>
-          <button
-            onClick={exportData}
-            className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            <Download className="w-4 h-4" />
-            <span>Exportar Dados</span>
-          </button>
+          <div className="flex space-x-3">
+            <button
+              onClick={() => setShowPixelSettings(true)}
+              className="flex items-center space-x-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+            >
+              <span>📊</span>
+              <span>Facebook Pixel</span>
+            </button>
+            <button
+              onClick={exportData}
+              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <Download className="w-4 h-4" />
+              <span>Exportar Dados</span>
+            </button>
+          </div>
         </div>
 
         {/* Users Table */}
@@ -314,8 +375,71 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
           </div>
         </div>
       )}
+
+      {/* Facebook Pixel Settings Modal */}
+      {showPixelSettings && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
+            <div className="p-6 border-b">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Configurações do Facebook Pixel
+                </h3>
+                <button
+                  onClick={() => setShowPixelSettings(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6">
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Facebook Pixel ID
+                </label>
+                <input
+                  type="text"
+                  value={pixelSettings.facebookPixelId}
+                  onChange={(e) => setPixelSettings(prev => ({ ...prev, facebookPixelId: e.target.value }))}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                  placeholder="123456789012345"
+                />
+                <p className="text-xs text-gray-500 mt-2">
+                  Encontre seu Pixel ID no Facebook Business Manager
+                </p>
+              </div>
+
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <h4 className="font-medium text-blue-900 mb-2">ℹ️ Como funciona:</h4>
+                <ul className="text-sm text-blue-800 space-y-1">
+                  <li>• O pixel será carregado automaticamente</li>
+                  <li>• Evento "Purchase" disparado ao gerar PIX</li>
+                  <li>• Valor da compra será enviado</li>
+                  <li>• Dados para otimização de campanhas</li>
+                </ul>
+              </div>
     </div>
   );
 };
 
+              <div className="flex space-x-3">
+                <button
+                  onClick={() => setShowPixelSettings(false)}
+                  className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors font-medium"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={savePixelSettings}
+                  className="flex-1 px-4 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors font-semibold"
+                >
+                  Salvar Pixel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 export default AdminPanel;

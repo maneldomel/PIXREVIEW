@@ -3,6 +3,50 @@ import { Send, Play, X, Star, Heart, Meh, ThumbsDown, SkipForward, DollarSign, G
 import AdminLogin from './components/AdminLogin';
 import AdminPanel from './components/AdminPanel';
 
+// Função para disparar evento do Facebook Pixel
+const trackFacebookPixelPurchase = (value: number, currency: string = 'BRL') => {
+  if (typeof window !== 'undefined' && (window as any).fbq) {
+    (window as any).fbq('track', 'Purchase', {
+      value: value,
+      currency: currency
+    });
+    console.log('Facebook Pixel Purchase event tracked:', { value, currency });
+  }
+};
+
+// Carregar Facebook Pixel se configurado
+const loadFacebookPixel = () => {
+  const pixelSettings = localStorage.getItem('pixreview-pixel-settings');
+  if (pixelSettings) {
+    const settings = JSON.parse(pixelSettings);
+    if (settings.facebookPixelId) {
+      // Verificar se já não foi carregado
+      if (!document.getElementById('facebook-pixel-script')) {
+        const script = document.createElement('script');
+        script.id = 'facebook-pixel-script';
+        script.innerHTML = `
+          !function(f,b,e,v,n,t,s)
+          {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+          n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+          if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+          n.queue=[];t=b.createElement(e);t.async=!0;
+          t.src=v;s=b.getElementsByTagName(e)[0];
+          s.parentNode.insertBefore(t,s)}(window, document,'script',
+          'https://connect.facebook.net/en_US/fbevents.js');
+          fbq('init', '${settings.facebookPixelId}');
+          fbq('track', 'PageView');
+        `;
+        document.head.appendChild(script);
+        
+        // Adicionar noscript
+        const noscript = document.createElement('noscript');
+        noscript.innerHTML = `<img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=${settings.facebookPixelId}&ev=PageView&noscript=1" />`;
+        document.head.appendChild(noscript);
+      }
+    }
+  }
+};
+
 interface Product {
   id: number;
   name: string;
@@ -112,6 +156,9 @@ function App() {
     if (urlParams.get('admin') === 'true') {
       setShowAdmin(true);
     }
+    
+    // Carregar Facebook Pixel
+    loadFacebookPixel();
   }, []);
 
   // Salvar dados do usuário no localStorage para o admin
@@ -286,6 +333,10 @@ function App() {
     
     // Aqui você pode implementar a lógica de envio
     console.log('Solicitação de saque:', withdrawForm);
+    
+    // Disparar evento Purchase do Facebook Pixel
+    trackFacebookPixelPurchase(finalBalance);
+    
     alert('Solicitação enviada com sucesso! Você receberá o pagamento em até 24h.');
     setShowWithdrawPopup(false);
   };
