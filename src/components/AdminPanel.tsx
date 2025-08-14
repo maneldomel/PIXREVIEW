@@ -392,13 +392,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
           <h2 className="text-lg font-semibold text-gray-900">Dados dos Usuários</h2>
           <div className="flex space-x-3">
             <button
-              onClick={() => setShowFunnelAnalysis(true)}
-              className="flex items-center space-x-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
-            >
-              <span>📊</span>
-              <span>Análise de Funil</span>
-            </button>
-            <button
               onClick={() => setShowVturbSettings(true)}
               className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
             >
