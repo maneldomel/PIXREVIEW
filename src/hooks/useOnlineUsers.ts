@@ -14,6 +14,12 @@ export const useOnlineUsers = () => {
   const [onlineCount, setOnlineCount] = useState(0);
 
   useEffect(() => {
+    // Não contar se estiver no admin
+    const isAdmin = window.location.search.includes('admin=true');
+    if (isAdmin) {
+      return;
+    }
+
     const updateOnlineUsers = () => {
       const currentTime = Date.now();
       const { sessionId, ipAddress } = getOrCreateSessionId();

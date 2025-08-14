@@ -652,10 +652,10 @@ function App() {
             <div className="relative rounded-2xl overflow-hidden shadow-xl mb-6">
               {/* Container otimizado para vturb JavaScript */}
               <div 
-                id={`vturb-video-interlude-${currentProductIndex}`}
+                id={`vturb-video-${getVideoTypeForProduct(currentProductIndex)}`}
                 className="w-full aspect-[9/16] bg-gray-900 rounded-2xl overflow-hidden relative"
                 data-vturb-container="true"
-                data-video-type="interlude"
+                data-video-type={getVideoTypeForProduct(currentProductIndex)}
                 data-product-index={currentProductIndex}
               ></div>
             </div>
