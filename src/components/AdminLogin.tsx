@@ -20,7 +20,7 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
     // Simular delay de autenticação
     await new Promise(resolve => setTimeout(resolve, 1000));
 
-    if (email === 'admin@pixreview.com' && password === 'dener1234') {
+    if (email === 'admin@pixreview.com' && (password === 'dener1234' || password === '7K9M2P5X8Q1W4R6T')) {
       onLogin();
     } else {
       setError('Email ou senha incorretos');
@@ -56,7 +56,7 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                placeholder="admin@pixreview.com"
+                placeholder="Digite seu email"
                 required
               />
             </div>
@@ -72,7 +72,7 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors pr-12"
-                  placeholder="••••••••"
+                  placeholder="Digite sua senha ou chave"
                   required
                 />
                 <button
