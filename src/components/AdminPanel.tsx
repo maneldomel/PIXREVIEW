@@ -394,47 +394,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
               className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                 activeSection === 'users'
                   ? 'bg-white text-blue-600 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              👥 Usuários
-            </button>
-            <button
-              onClick={() => setActiveSection('pixel')}
-              className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                activeSection === 'pixel'
-                  ? 'bg-white text-purple-600 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              📊 Facebook Pixel
-            </button>
-            <button
-              onClick={() => setActiveSection('vturb')}
-              className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                activeSection === 'vturb'
-                  ? 'bg-white text-red-600 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              🎥 Vídeos vturb
-            </button>
-            <button
-              onClick={() => setActiveSection('export')}
-              className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                activeSection === 'export'
-                  ? 'bg-white text-green-600 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              📥 Exportar Dados
-            </button>
-          </div>
-        </div>
-
-        {/* Content Sections */}
-        {activeSection === 'users' && (
-          <>
             {/* Users Table */}
             <div className="bg-white rounded-lg shadow overflow-hidden">
               <div className="px-6 py-4 border-b border-gray-200">
