@@ -31,7 +31,9 @@ interface PixelSettings {
 interface VturbSettings {
   welcomeVideoCode: string;
   explanationVideoCode: string;
-  interludeVideoCode: string;
+  interludeVideo1Code: string; // Relógios para Bolsas
+  interludeVideo2Code: string; // Bolsas para Tênis
+  interludeVideo3Code: string; // Tênis para Final
 }
 
 interface FunnelData {
@@ -48,14 +50,16 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
   const [showUserDetails, setShowUserDetails] = useState(false);
   const [showPixelSettings, setShowPixelSettings] = useState(false);
   const [showVturbSettings, setShowVturbSettings] = useState(false);
-  const [showFunnelAnalysis, setShowFunnelAnalysis] = useState(false);
+  const [activeSection, setActiveSection] = useState<'users' | 'pixel' | 'vturb' | 'export'>('users');
   const [pixelSettings, setPixelSettings] = useState<PixelSettings>({
     facebookPixelId: ''
   });
   const [vturbSettings, setVturbSettings] = useState<VturbSettings>({
     welcomeVideoCode: '',
     explanationVideoCode: '',
-    interludeVideoCode: ''
+    interludeVideo1Code: '',
+    interludeVideo2Code: '',
+    interludeVideo3Code: ''
   });
 
   const handleLogout = () => {
@@ -155,58 +159,23 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
       explanationContainer.innerHTML = vturbSettings.explanationVideoCode;
     }
     
-    // Aplicar códigos dos vídeos intermediários
-    for (let i = 2; i <= 6; i += 2) {
-      const interludeContainer = document.getElementById(`vturb-video-interlude-${i}`);
-      if (interludeContainer && vturbSettings.interludeVideoCode) {
-        interludeContainer.innerHTML = vturbSettings.interludeVideoCode;
-      }
+    // Aplicar códigos dos vídeos intermediários individuais
+    const interlude1Container = document.getElementById('vturb-video-interlude-2');
+    if (interlude1Container && vturbSettings.interludeVideo1Code) {
+      interlude1Container.innerHTML = vturbSettings.interludeVideo1Code;
+    }
+    
+    const interlude2Container = document.getElementById('vturb-video-interlude-4');
+    if (interlude2Container && vturbSettings.interludeVideo2Code) {
+      interlude2Container.innerHTML = vturbSettings.interludeVideo2Code;
+    }
+    
+    const interlude3Container = document.getElementById('vturb-video-interlude-6');
+    if (interlude3Container && vturbSettings.interludeVideo3Code) {
+      interlude3Container.innerHTML = vturbSettings.interludeVideo3Code;
     }
   };
 
-  const getFunnelData = (): FunnelData[] => {
-    const totalUsers = users.length;
-    if (totalUsers === 0) return [];
-    
-    const usersWithName = users.filter(user => user.name).length;
-    const usersStartedQuiz = users.filter(user => user.evaluations.length > 0).length;
-    const usersCompleted = users.filter(user => user.evaluations.length >= 7).length;
-    const usersWithWhatsapp = users.filter(user => user.whatsapp).length;
-    
-    const funnelSteps: FunnelData[] = [
-      {
-        step: 'Visitantes',
-        users: totalUsers,
-        percentage: 100
-      },
-      {
-        step: 'Informaram Nome',
-        users: usersWithName,
-        percentage: totalUsers > 0 ? (usersWithName / totalUsers) * 100 : 0,
-        dropRate: totalUsers > 0 ? ((totalUsers - usersWithName) / totalUsers) * 100 : 0
-      },
-      {
-        step: 'Iniciaram Quiz',
-        users: usersStartedQuiz,
-        percentage: totalUsers > 0 ? (usersStartedQuiz / totalUsers) * 100 : 0,
-        dropRate: usersWithName > 0 ? ((usersWithName - usersStartedQuiz) / usersWithName) * 100 : 0
-      },
-      {
-        step: 'Completaram Quiz',
-        users: usersCompleted,
-        percentage: totalUsers > 0 ? (usersCompleted / totalUsers) * 100 : 0,
-        dropRate: usersStartedQuiz > 0 ? ((usersStartedQuiz - usersCompleted) / usersStartedQuiz) * 100 : 0
-      },
-      {
-        step: 'Finalizaram (WhatsApp)',
-        users: usersWithWhatsapp,
-        percentage: totalUsers > 0 ? (usersWithWhatsapp / totalUsers) * 100 : 0,
-        dropRate: usersCompleted > 0 ? ((usersCompleted - usersWithWhatsapp) / usersCompleted) * 100 : 0
-      }
-    ];
-    
-    return funnelSteps;
-  };
   const getTotalStats = () => {
     const totalUsersStarted = users.length;
     const totalEvaluations = users.reduce((sum, user) => sum + user.evaluations.length, 0);
@@ -417,111 +386,96 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
         </div>
 
         {/* Actions */}
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-lg font-semibold text-gray-900">Dados dos Usuários</h2>
-          <div className="flex space-x-3">
+        {/* Navigation Sections */}
+        <div className="mb-8">
+          <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg">
             <button
-              onClick={() => setShowFunnelAnalysis(true)}
-              className="flex items-center space-x-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+              onClick={() => setActiveSection('users')}
+              className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                activeSection === 'users'
+                  ? 'bg-white text-blue-600 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
             >
-              <span>📊</span>
-              <span>Análise de Funil</span>
+              👥 Usuários
             </button>
             <button
-              onClick={() => setShowVturbSettings(true)}
-              className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              onClick={() => setActiveSection('pixel')}
+              className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                activeSection === 'pixel'
+                  ? 'bg-white text-purple-600 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
             >
-              <span>🎥</span>
-              <span>Configurar vturb</span>
+              📊 Facebook Pixel
             </button>
             <button
-              onClick={() => setShowPixelSettings(true)}
-              className="flex items-center space-x-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+              onClick={() => setActiveSection('vturb')}
+              className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                activeSection === 'vturb'
+                  ? 'bg-white text-red-600 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
             >
-              <span>📊</span>
-              <span>Facebook Pixel</span>
+              🎥 Vídeos vturb
             </button>
             <button
-              onClick={exportTxtData}
-              className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+              onClick={() => setActiveSection('export')}
+              className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                activeSection === 'export'
+                  ? 'bg-white text-green-600 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
             >
-              <Download className="w-4 h-4" />
-              <span>Exportar TXT</span>
-            </button>
-            <button
-              onClick={exportData}
-              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              <Download className="w-4 h-4" />
-              <span>Exportar JSON</span>
+              📥 Exportar Dados
             </button>
           </div>
         </div>
 
-        {/* Users Table */}
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Usuário
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Data/Hora
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Avaliações
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Valor Final
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Ações
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {users.map((user) => (
-                  <tr key={user.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{user.name}</div>
-                      <div className="text-sm text-gray-500">ID: {user.id}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {new Date(user.timestamp).toLocaleString('pt-BR')}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {user.evaluations.length}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">
-                      R${user.finalBalance.toFixed(2)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <button
-                        onClick={() => {
-                          setSelectedUser(user);
-                          setShowUserDetails(true);
-                        }}
-                        className="text-blue-600 hover:text-blue-900 flex items-center space-x-1"
-                      >
-                        <Eye className="w-4 h-4" />
-                        <span>Ver Detalhes</span>
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+        {/* Content Sections */}
+        {activeSection === 'users' && (
+          <>
+            {/* Users Table */}
+            <div className="bg-white rounded-lg shadow overflow-hidden">
+              <div className="px-6 py-4 border-b border-gray-200">
+                <h3 className="text-lg font-semibold text-gray-900">Lista de Usuários</h3>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Nome
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        WhatsApp
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {users.map((user) => (
+                      <tr key={user.id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm font-medium text-gray-900">{user.name}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {user.whatsapp || '-'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
 
-          {users.length === 0 && (
-            <div className="text-center py-12">
-              <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-500">Nenhum usuário encontrado</p>
+              {users.length === 0 && (
+                <div className="text-center py-12">
+                  <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-500">Nenhum usuário encontrado</p>
+                </div>
+              )}
             </div>
-          )}
-        </div>
+          </>
+        )}
       </div>
 
       {/* Live Quiz Progress Section */}
