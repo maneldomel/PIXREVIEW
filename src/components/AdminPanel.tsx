@@ -109,6 +109,65 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
     link.click();
   };
 
+  const exportTxtData = () => {
+    let txtContent = `PIXREVIEW - RELATÓRIO DE USUÁRIOS\n`;
+    txtContent += `Data de Exportação: ${new Date().toLocaleString('pt-BR')}\n`;
+    txtContent += `Total de Usuários: ${users.length}\n`;
+    txtContent += `${'='.repeat(60)}\n\n`;
+
+    users.forEach((user, index) => {
+      const userNumber = index + 1;
+      txtContent += `USUÁRIO #${userNumber.toString().padStart(3, '0')}\n`;
+      txtContent += `${'-'.repeat(30)}\n`;
+      txtContent += `Nome: ${user.name}\n`;
+      txtContent += `ID: ${user.id}\n`;
+      txtContent += `Data/Hora: ${new Date(user.timestamp).toLocaleString('pt-BR')}\n`;
+      txtContent += `Total de Avaliações: ${user.evaluations.length}\n`;
+      txtContent += `Valor Ganho: R$${user.totalEarned.toFixed(2)}\n`;
+      txtContent += `Saldo Final: R$${user.finalBalance.toFixed(2)}\n`;
+      
+      if (user.withdrawalData) {
+        txtContent += `\nDADOS PARA SAQUE:\n`;
+        txtContent += `Nome Completo: ${user.withdrawalData.fullName}\n`;
+        txtContent += `Chave Pix: ${user.withdrawalData.pixKey}\n`;
+        txtContent += `WhatsApp: ${user.withdrawalData.whatsapp}\n`;
+      }
+      
+      if (user.evaluations.length > 0) {
+        txtContent += `\nAVALIAÇÕES:\n`;
+        user.evaluations.forEach((evaluation, evalIndex) => {
+          txtContent += `  ${evalIndex + 1}. ${evaluation.productName}\n`;
+          txtContent += `     Avaliação: ${getRatingText(evaluation.rating)}\n`;
+          txtContent += `     Valor Ganho: R$${evaluation.earnedAmount.toFixed(2)}\n`;
+          if (evaluation.feedback) {
+            txtContent += `     Feedback: ${evaluation.feedback}\n`;
+          }
+          txtContent += `\n`;
+        });
+      }
+      
+      txtContent += `\n${'='.repeat(60)}\n\n`;
+    });
+
+    // Adicionar resumo final
+    const totalEvaluations = users.reduce((sum, user) => sum + user.evaluations.length, 0);
+    const totalPaid = users.reduce((sum, user) => sum + user.finalBalance, 0);
+    
+    txtContent += `RESUMO GERAL\n`;
+    txtContent += `${'-'.repeat(30)}\n`;
+    txtContent += `Total de Usuários: ${users.length}\n`;
+    txtContent += `Total de Avaliações: ${totalEvaluations}\n`;
+    txtContent += `Total a Pagar: R$${totalPaid.toFixed(2)}\n`;
+    txtContent += `Média de Avaliações por Usuário: ${users.length > 0 ? (totalEvaluations / users.length).toFixed(1) : '0'}\n`;
+
+    const txtBlob = new Blob([txtContent], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(txtBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `pixreview-relatorio-${new Date().toISOString().split('T')[0]}.txt`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
   const getRatingColor = (rating: string) => {
     switch (rating) {
       case 'loved': return 'text-green-600 bg-green-100';
@@ -222,11 +281,18 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
               <span>Facebook Pixel</span>
             </button>
             <button
+              onClick={exportTxtData}
+              className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+            >
+              <Download className="w-4 h-4" />
+              <span>Exportar TXT</span>
+            </button>
+            <button
               onClick={exportData}
               className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
               <Download className="w-4 h-4" />
-              <span>Exportar Dados</span>
+              <span>Exportar JSON</span>
             </button>
           </div>
         </div>
