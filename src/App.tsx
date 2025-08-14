@@ -303,34 +303,13 @@ function App() {
             
             {/* Container do Vídeo - Otimizado para vturb */}
             <div className="relative rounded-2xl overflow-hidden shadow-xl mb-6">
+              {/* Container otimizado para vturb JavaScript */}
               <div 
-                className="w-full aspect-[9/16] bg-gray-200 flex items-center justify-center relative"
-                id="video-container-welcome"
-              >
-                {/* Placeholder para vídeo vturb */}
-                <img 
-                  src="https://images.pexels.com/photos/3945313/pexels-photo-3945313.jpeg" 
-                  alt="Gabi - Sua guia"
-                  className="w-full h-full object-cover"
-                />
-                
-                <div className="absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center">
-                  <button 
-                    onClick={() => setShowNamePopup(true)}
-                    className="bg-gradient-to-r from-blue-500 to-green-500 p-6 rounded-full hover:from-blue-600 hover:to-green-600 transition-all duration-300 transform hover:scale-110 shadow-xl"
-                  >
-                    <Play className="h-12 w-12 text-white ml-1" />
-                  </button>
-                </div>
-
-                {/* Badge AO VIVO */}
-                <div className="absolute top-3 left-3 bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
-                  <div className="flex items-center space-x-1">
-                    <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>
-                    <span>AO VIVO</span>
-                  </div>
-                </div>
-              </div>
+                id="vturb-video-welcome"
+                className="w-full aspect-[9/16] bg-gray-900 rounded-2xl overflow-hidden relative"
+                data-vturb-container="true"
+                data-video-type="welcome"
+              ></div>
             </div>
           </div>
         </div>
@@ -424,38 +403,20 @@ function App() {
             
             {/* Container do Vídeo - Otimizado para vturb */}
             <div className="relative rounded-2xl overflow-hidden shadow-xl mb-6">
+              {/* Container otimizado para vturb JavaScript */}
               <div 
-                className="w-full aspect-[9/16] bg-gray-200 flex items-center justify-center relative"
-                id="video-container-explanation"
-              >
-                <img 
-                  src="https://images.pexels.com/photos/4491461/pexels-photo-4491461.jpeg" 
-                  alt="Explicação da plataforma"
-                  className="w-full h-full object-cover"
-                />
-                
-                <div className="absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center">
-                  <button 
-                    onClick={handleVideoClick}
-                    className="bg-gradient-to-r from-blue-500 to-green-500 p-6 rounded-full hover:from-blue-600 hover:to-green-600 transition-all duration-300 transform hover:scale-110 shadow-xl"
-                  >
-                    <Play className="h-12 w-12 text-white ml-1" />
-                  </button>
-                </div>
-
-                <div className="absolute top-3 left-3 bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
-                  <div className="flex items-center space-x-1">
-                    <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>
-                    <span>AO VIVO</span>
-                  </div>
-                </div>
-              </div>
+                id="vturb-video-explanation"
+                className="w-full aspect-[9/16] bg-gray-900 rounded-2xl overflow-hidden relative"
+                data-vturb-container="true"
+                data-video-type="explanation"
+              ></div>
             </div>
 
             <div className="text-center">
               <button
                 onClick={handleVideoClick}
-                className="w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-green-500 text-white rounded-xl hover:from-blue-600 hover:to-green-600 transition-all duration-300 font-semibold"
+               className="w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-green-500 text-white rounded-xl hover:from-blue-600 hover:to-green-600 transition-all duration-300 font-semibold"
+               id="continue-button-explanation"
               >
                 Continuar
               </button>
@@ -471,30 +432,20 @@ function App() {
             
             {/* Container do Vídeo - Otimizado para vturb */}
             <div className="relative rounded-2xl overflow-hidden shadow-xl mb-6">
+              {/* Container otimizado para vturb JavaScript */}
               <div 
-                className="w-full aspect-[9/16] bg-gray-200 flex items-center justify-center relative"
-                id={`video-container-interlude-${currentProductIndex}`}
-              >
-                <img 
-                  src="https://images.pexels.com/photos/4491461/pexels-photo-4491461.jpeg" 
-                  alt="Gabi falando"
-                  className="w-full h-full object-cover"
-                />
-                
-                <div className="absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center">
-                  <button 
-                    onClick={handleVideoClick}
-                    className="bg-gradient-to-r from-blue-500 to-green-500 p-6 rounded-full hover:from-blue-600 hover:to-green-600 transition-all duration-300 transform hover:scale-110 shadow-xl"
-                  >
-                    <Play className="h-12 w-12 text-white ml-1" />
-                  </button>
-                </div>
-              </div>
+                id={`vturb-video-interlude-${currentProductIndex}`}
+                className="w-full aspect-[9/16] bg-gray-900 rounded-2xl overflow-hidden relative"
+                data-vturb-container="true"
+                data-video-type="interlude"
+                data-product-index={currentProductIndex}
+              ></div>
             </div>
 
             <button
               onClick={handleVideoClick}
-              className="w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-green-500 text-white rounded-xl hover:from-blue-600 hover:to-green-600 transition-all duration-300 font-semibold"
+             className="w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-green-500 text-white rounded-xl hover:from-blue-600 hover:to-green-600 transition-all duration-300 font-semibold"
+             id="continue-button-interlude"
             >
               Continuar
             </button>
