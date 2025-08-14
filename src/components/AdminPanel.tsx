@@ -31,7 +31,9 @@ interface PixelSettings {
 interface VturbSettings {
   welcomeVideoCode: string;
   explanationVideoCode: string;
-  interludeVideoCode: string;
+  relogiosVideoCode: string;
+  bolsasVideoCode: string;
+  tenisVideoCode: string;
 }
 
 interface FunnelData {
@@ -46,16 +48,18 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
   const [activeQuizUsers, setActiveQuizUsers] = useState<any[]>([]);
   const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
   const [showUserDetails, setShowUserDetails] = useState(false);
+  const [activeSection, setActiveSection] = useState('users');
   const [showPixelSettings, setShowPixelSettings] = useState(false);
   const [showVturbSettings, setShowVturbSettings] = useState(false);
-  const [showFunnelAnalysis, setShowFunnelAnalysis] = useState(false);
   const [pixelSettings, setPixelSettings] = useState<PixelSettings>({
     facebookPixelId: ''
   });
   const [vturbSettings, setVturbSettings] = useState<VturbSettings>({
     welcomeVideoCode: '',
     explanationVideoCode: '',
-    interludeVideoCode: ''
+    relogiosVideoCode: '',
+    bolsasVideoCode: '',
+    tenisVideoCode: ''
   });
 
   const handleLogout = () => {
@@ -155,58 +159,25 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
       explanationContainer.innerHTML = vturbSettings.explanationVideoCode;
     }
     
-    // Aplicar códigos dos vídeos intermediários
-    for (let i = 2; i <= 6; i += 2) {
-      const interludeContainer = document.getElementById(`vturb-video-interlude-${i}`);
-      if (interludeContainer && vturbSettings.interludeVideoCode) {
-        interludeContainer.innerHTML = vturbSettings.interludeVideoCode;
-      }
+    // Aplicar código do vídeo de relógios
+    const relogiosContainer = document.getElementById('vturb-video-relogios');
+    if (relogiosContainer && vturbSettings.relogiosVideoCode) {
+      relogiosContainer.innerHTML = vturbSettings.relogiosVideoCode;
+    }
+    
+    // Aplicar código do vídeo de bolsas
+    const bolsasContainer = document.getElementById('vturb-video-bolsas');
+    if (bolsasContainer && vturbSettings.bolsasVideoCode) {
+      bolsasContainer.innerHTML = vturbSettings.bolsasVideoCode;
+    }
+    
+    // Aplicar código do vídeo de tênis
+    const tenisContainer = document.getElementById('vturb-video-tenis');
+    if (tenisContainer && vturbSettings.tenisVideoCode) {
+      tenisContainer.innerHTML = vturbSettings.tenisVideoCode;
     }
   };
 
-  const getFunnelData = (): FunnelData[] => {
-    const totalUsers = users.length;
-    if (totalUsers === 0) return [];
-    
-    const usersWithName = users.filter(user => user.name).length;
-    const usersStartedQuiz = users.filter(user => user.evaluations.length > 0).length;
-    const usersCompleted = users.filter(user => user.evaluations.length >= 7).length;
-    const usersWithWhatsapp = users.filter(user => user.whatsapp).length;
-    
-    const funnelSteps: FunnelData[] = [
-      {
-        step: 'Visitantes',
-        users: totalUsers,
-        percentage: 100
-      },
-      {
-        step: 'Informaram Nome',
-        users: usersWithName,
-        percentage: totalUsers > 0 ? (usersWithName / totalUsers) * 100 : 0,
-        dropRate: totalUsers > 0 ? ((totalUsers - usersWithName) / totalUsers) * 100 : 0
-      },
-      {
-        step: 'Iniciaram Quiz',
-        users: usersStartedQuiz,
-        percentage: totalUsers > 0 ? (usersStartedQuiz / totalUsers) * 100 : 0,
-        dropRate: usersWithName > 0 ? ((usersWithName - usersStartedQuiz) / usersWithName) * 100 : 0
-      },
-      {
-        step: 'Completaram Quiz',
-        users: usersCompleted,
-        percentage: totalUsers > 0 ? (usersCompleted / totalUsers) * 100 : 0,
-        dropRate: usersStartedQuiz > 0 ? ((usersStartedQuiz - usersCompleted) / usersStartedQuiz) * 100 : 0
-      },
-      {
-        step: 'Finalizaram (WhatsApp)',
-        users: usersWithWhatsapp,
-        percentage: totalUsers > 0 ? (usersWithWhatsapp / totalUsers) * 100 : 0,
-        dropRate: usersCompleted > 0 ? ((usersCompleted - usersWithWhatsapp) / usersCompleted) * 100 : 0
-      }
-    ];
-    
-    return funnelSteps;
-  };
   const getTotalStats = () => {
     const totalUsersStarted = users.length;
     const totalEvaluations = users.reduce((sum, user) => sum + user.evaluations.length, 0);
