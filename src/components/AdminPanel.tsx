@@ -5,6 +5,7 @@ import { useOnlineUsers, getActiveQuizUsers } from '../hooks/useOnlineUsers';
 interface UserData {
   id: string;
   name: string;
+  whatsapp?: string;
   timestamp: string;
   evaluations: Array<{
     productId: number;
@@ -15,11 +16,8 @@ interface UserData {
   }>;
   totalEarned: number;
   finalBalance: number;
-  withdrawalData?: {
-    fullName: string;
-    pixKey: string;
-    whatsapp: string;
-  };
+  allowFutureContact?: boolean;
+  contactWhatsapp?: string;
 }
 
 interface AdminPanelProps {
@@ -113,7 +111,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
     const totalUsersStarted = users.length;
     const totalEvaluations = users.reduce((sum, user) => sum + user.evaluations.length, 0);
     const usersCompleted = users.filter(user => user.evaluations.length >= 7).length; // 7 produtos no quiz
-    const pixGenerated = users.filter(user => user.withdrawalData).length;
+    const pixGenerated = users.filter(user => user.whatsapp).length;
     const conversionRate = totalUsersStarted > 0 ? ((usersCompleted / totalUsersStarted) * 100).toFixed(1) : '0';
 
     return { totalUsersStarted, usersCompleted, totalEvaluations, pixGenerated, conversionRate };
@@ -140,17 +138,20 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
       txtContent += `USUÁRIO #${userNumber.toString().padStart(3, '0')}\n`;
       txtContent += `${'-'.repeat(30)}\n`;
       txtContent += `Nome: ${user.name}\n`;
+      if (user.whatsapp) {
+        txtContent += `WhatsApp: ${user.whatsapp}\n`;
+      }
       txtContent += `ID: ${user.id}\n`;
       txtContent += `Data/Hora: ${new Date(user.timestamp).toLocaleString('pt-BR')}\n`;
       txtContent += `Total de Avaliações: ${user.evaluations.length}\n`;
       txtContent += `Valor Ganho: R$${user.totalEarned.toFixed(2)}\n`;
       txtContent += `Saldo Final: R$${user.finalBalance.toFixed(2)}\n`;
       
-      if (user.withdrawalData) {
-        txtContent += `\nDADOS PARA SAQUE:\n`;
-        txtContent += `Nome Completo: ${user.withdrawalData.fullName}\n`;
-        txtContent += `Chave Pix: ${user.withdrawalData.pixKey}\n`;
-        txtContent += `WhatsApp: ${user.withdrawalData.whatsapp}\n`;
+      if (user.allowFutureContact !== undefined) {
+        txtContent += `Aceita Contato Futuro: ${user.allowFutureContact ? 'Sim' : 'Não'}\n`;
+        if (user.contactWhatsapp) {
+          txtContent += `WhatsApp para Contato: ${user.contactWhatsapp}\n`;
+        }
       }
       
       if (user.evaluations.length > 0) {
@@ -178,7 +179,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
     txtContent += `Usuários que Completaram: ${stats.usersCompleted}\n`;
     txtContent += `Taxa de Conversão: ${stats.conversionRate}%\n`;
     txtContent += `Total de Avaliações: ${stats.totalEvaluations}\n`;
-    txtContent += `PIX Gerados: ${stats.pixGenerated}\n`;
+    txtContent += `Usuários Finalizaram: ${stats.pixGenerated}\n`;
 
     const txtBlob = new Blob([txtContent], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(txtBlob);
@@ -498,18 +499,24 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
                     <p><span className="font-medium">Nome:</span> {selectedUser.name}</p>
                     <p><span className="font-medium">ID:</span> {selectedUser.id}</p>
                     <p><span className="font-medium">Data:</span> {new Date(selectedUser.timestamp).toLocaleString('pt-BR')}</p>
+                    {selectedUser.whatsapp && (
+                      <p><span className="font-medium">WhatsApp:</span> {selectedUser.whatsapp}</p>
+                    )}
                     <p><span className="font-medium">Total Ganho:</span> <span className="text-green-600 font-bold">R${selectedUser.totalEarned.toFixed(2)}</span></p>
                     <p><span className="font-medium">Saldo Final:</span> <span className="text-green-600 font-bold">R${selectedUser.finalBalance.toFixed(2)}</span></p>
                   </div>
                 </div>
 
-                {selectedUser.withdrawalData && (
+                {(selectedUser.allowFutureContact !== undefined || selectedUser.contactWhatsapp) && (
                   <div className="bg-blue-50 rounded-lg p-4">
-                    <h4 className="font-medium text-gray-900 mb-2">Dados para Saque</h4>
+                    <h4 className="font-medium text-gray-900 mb-2">Contato Futuro</h4>
                     <div className="space-y-2 text-sm">
-                      <p><span className="font-medium">Nome Completo:</span> {selectedUser.withdrawalData.fullName}</p>
-                      <p><span className="font-medium">Chave Pix:</span> {selectedUser.withdrawalData.pixKey}</p>
-                      <p><span className="font-medium">WhatsApp:</span> {selectedUser.withdrawalData.whatsapp}</p>
+                      {selectedUser.allowFutureContact !== undefined && (
+                        <p><span className="font-medium">Aceita Contato:</span> {selectedUser.allowFutureContact ? 'Sim' : 'Não'}</p>
+                      )}
+                      {selectedUser.contactWhatsapp && (
+                        <p><span className="font-medium">WhatsApp:</span> {selectedUser.contactWhatsapp}</p>
+                      )}
                     </div>
                   </div>
                 )}

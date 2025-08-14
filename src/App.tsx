@@ -142,14 +142,12 @@ function App() {
   const [showFinalScreen, setShowFinalScreen] = useState(false);
   const [showWithdrawPopup, setShowWithdrawPopup] = useState(false);
   const [showFeedbackPopup, setShowFeedbackPopup] = useState(false);
+  const [showContactPopup, setShowContactPopup] = useState(false);
   const [feedbackText, setFeedbackText] = useState('');
   const [showAdmin, setShowAdmin] = useState(false);
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
-  const [withdrawForm, setWithdrawForm] = useState({
-    fullName: '',
-    pixKey: '',
-    whatsapp: ''
-  });
+  const [contactWhatsapp, setContactWhatsapp] = useState('');
+  const [allowFutureContact, setAllowFutureContact] = useState(false);
 
   // Verificar se deve mostrar admin (URL com ?admin=true)
   useEffect(() => {
@@ -302,7 +300,7 @@ function App() {
       setCurrentProductIndex(nextProductIndex);
     } else if (nextProductIndex >= products.length) {
       // Finalizar avaliações
-      setShowFinalScreen(true);
+      setShowContactPopup(true);
     } else {
       setCurrentProductIndex(nextProductIndex);
     }
@@ -320,30 +318,48 @@ function App() {
     proceedToNextProduct('disliked');
   };
 
-  const handleWithdrawSubmit = () => {
-    if (!withdrawForm.fullName.trim() || !withdrawForm.pixKey.trim() || !withdrawForm.whatsapp.trim()) {
-      return;
-    }
-    
-    // Salvar dados de saque
+  const handleContactSubmit = (allowContact: boolean) => {
     const currentUserId = localStorage.getItem('pixreview-current-user-id') || 'unknown';
     const existingData = localStorage.getItem('pixreview-admin-data');
     const adminData = existingData ? JSON.parse(existingData) : [];
     const currentUser = adminData.find((user: any) => user.id === currentUserId);
     
     if (currentUser) {
-      currentUser.withdrawalData = withdrawForm;
+      currentUser.allowFutureContact = allowContact;
+      if (allowContact && contactWhatsapp.trim()) {
+        currentUser.contactWhatsapp = contactWhatsapp;
+      }
       localStorage.setItem('pixreview-admin-data', JSON.stringify(adminData));
     }
     
-    // Aqui você pode implementar a lógica de envio
-    console.log('Solicitação de saque:', withdrawForm);
+    setShowContactPopup(false);
+    setShowFinalScreen(true);
+  };
+
+  const handleFinalSubmit = () => {
+    if (!contactWhatsapp.trim()) {
+      return;
+    }
+    
+    // Salvar WhatsApp final
+    const currentUserId = localStorage.getItem('pixreview-current-user-id') || 'unknown';
+    const existingData = localStorage.getItem('pixreview-admin-data');
+    const adminData = existingData ? JSON.parse(existingData) : [];
+    const currentUser = adminData.find((user: any) => user.id === currentUserId);
+    
+    if (currentUser) {
+      currentUser.whatsapp = contactWhatsapp;
+      localStorage.setItem('pixreview-admin-data', JSON.stringify(adminData));
+    }
+    
+    console.log('Dados finais:', { name: userName, whatsapp: contactWhatsapp });
     
     // Disparar evento Purchase do Facebook Pixel
     trackFacebookPixelPurchase(finalBalance);
     
-    alert('Solicitação enviada com sucesso! Você receberá o pagamento em até 24h.');
-    setShowWithdrawPopup(false);
+    alert('Dados salvos com sucesso! Obrigado pela participação.');
+    setShowFinalScreen(false);
+    setCurrentStep(0); // Reiniciar
   };
 
   const getVideoMessage = () => {
@@ -548,6 +564,54 @@ function App() {
         </div>
       )}
 
+      {/* Popup de Contato Futuro */}
+      {showContactPopup && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
+          <div className="w-full max-w-sm mx-auto bg-white rounded-2xl p-6 shadow-2xl">
+            
+            <div className="text-center mb-6">
+              <h3 className="text-lg font-bold text-gray-900 mb-2">Quase terminando! 🎉</h3>
+              <p className="text-gray-600 text-sm">Podemos te contatar para avaliações futuras?</p>
+              <div className="mt-3 bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <p className="text-blue-700 text-sm font-medium">
+                  💰 Ganhe dinheiro em novos produtos!
+                </p>
+              </div>
+            </div>
+
+            <div className="mb-6">
+              <input
+                type="text"
+                value={contactWhatsapp}
+                onChange={(e) => setContactWhatsapp(e.target.value)}
+                placeholder="(11) 99999-9999"
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              <p className="text-xs text-gray-500 mt-2">
+                Seu WhatsApp para futuras oportunidades
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              <button
+                onClick={() => handleContactSubmit(true)}
+                disabled={!contactWhatsapp.trim()}
+                className="w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-green-500 text-white rounded-xl hover:from-blue-600 hover:to-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-all duration-300 font-semibold"
+              >
+                Sim, quero participar!
+              </button>
+              
+              <button
+                onClick={() => handleContactSubmit(false)}
+                className="w-full px-6 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-all duration-300 font-medium"
+              >
+                Não, obrigado
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Tela 1.5 - Vídeo Explicativo */}
       {currentStep === 1 && (
         <div className="min-h-screen flex flex-col justify-center px-4 pt-28 pb-8">
@@ -728,20 +792,20 @@ function App() {
               onClick={() => setShowWithdrawPopup(true)}
               className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white py-4 rounded-xl hover:from-green-600 hover:to-green-700 transition-all duration-300 transform active:scale-95 shadow-lg font-bold text-lg"
             >
-              Sacar Agora
+              Finalizar
             </button>
           </div>
         </div>
       )}
 
-      {/* Pop-up de Saque */}
+      {/* Pop-up Final */}
       {showWithdrawPopup && (
         <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
-          <div className="w-full max-w-md bg-white rounded-2xl p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+          <div className="w-full max-w-sm bg-white rounded-2xl p-6 shadow-2xl">
             
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold text-gray-900">Dados para Saque</h3>
+              <h3 className="text-xl font-bold text-gray-900">Seus Dados</h3>
               <button
                 onClick={() => setShowWithdrawPopup(false)}
                 className="p-2 hover:bg-gray-100 rounded-full transition-colors duration-200"
@@ -750,52 +814,31 @@ function App() {
               </button>
             </div>
 
-            {/* Formulário */}
-            <div className="space-y-4 mb-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Nome completo
-                </label>
-                <input
-                  type="text"
-                  value={withdrawForm.fullName}
-                  onChange={(e) => setWithdrawForm(prev => ({ ...prev, fullName: e.target.value }))}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Seu nome completo"
-                />
+            {/* Dados do Usuário */}
+            <div className="mb-6">
+              <div className="bg-gray-50 rounded-xl p-4 mb-4">
+                <p className="text-sm text-gray-600 mb-1">Nome:</p>
+                <p className="font-medium text-gray-900">{userName}</p>
               </div>
-
+              
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Chave Pix
+                  Seu WhatsApp
                 </label>
                 <input
                   type="text"
-                  value={withdrawForm.pixKey}
-                  onChange={(e) => setWithdrawForm(prev => ({ ...prev, pixKey: e.target.value }))}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                  placeholder="E-mail ou telefone"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  WhatsApp para contato
-                </label>
-                <input
-                  type="text"
-                  value={withdrawForm.whatsapp}
-                  onChange={(e) => setWithdrawForm(prev => ({ ...prev, whatsapp: e.target.value }))}
+                  value={contactWhatsapp}
+                  onChange={(e) => setContactWhatsapp(e.target.value)}
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="(11) 99999-9999"
                 />
               </div>
             </div>
 
-            {/* Valor do Saque */}
+            {/* Valor Ganho */}
             <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-6">
               <div className="text-center">
-                <span className="text-sm text-gray-600">Valor a receber:</span>
+                <span className="text-sm text-gray-600">Você ganhou:</span>
                 <div className="text-2xl font-bold text-green-600 mt-1">
                   R${finalBalance.toFixed(2)}
                 </div>
@@ -804,11 +847,11 @@ function App() {
 
             {/* Botão */}
             <button
-              onClick={handleWithdrawSubmit}
-              disabled={!withdrawForm.fullName.trim() || !withdrawForm.pixKey.trim() || !withdrawForm.whatsapp.trim()}
+              onClick={handleFinalSubmit}
+              disabled={!contactWhatsapp.trim()}
               className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white py-4 rounded-xl hover:from-green-600 hover:to-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-all duration-300 transform active:scale-95 font-semibold"
             >
-              Finalizar solicitação
+              Finalizar Participação
             </button>
           </div>
         </div>
