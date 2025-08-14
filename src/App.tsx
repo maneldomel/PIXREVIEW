@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Send, Play, X, Star, Heart, Meh, ThumbsDown, SkipForward, DollarSign, Gift } from 'lucide-react';
+import AdminLogin from './components/AdminLogin';
+import AdminPanel from './components/AdminPanel';
 
 interface Product {
   id: number;
@@ -96,11 +98,38 @@ function App() {
   const [showWithdrawPopup, setShowWithdrawPopup] = useState(false);
   const [showFeedbackPopup, setShowFeedbackPopup] = useState(false);
   const [feedbackText, setFeedbackText] = useState('');
+  const [showAdmin, setShowAdmin] = useState(false);
+  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
   const [withdrawForm, setWithdrawForm] = useState({
     fullName: '',
     pixKey: '',
     whatsapp: ''
   });
+
+  // Verificar se deve mostrar admin (URL com ?admin=true)
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('admin') === 'true') {
+      setShowAdmin(true);
+    }
+  }, []);
+
+  // Salvar dados do usuário no localStorage para o admin
+  const saveUserDataForAdmin = (userData: any) => {
+    const existingData = localStorage.getItem('pixreview-admin-data');
+    const adminData = existingData ? JSON.parse(existingData) : [];
+    
+    // Verificar se usuário já existe (atualizar) ou adicionar novo
+    const existingUserIndex = adminData.findIndex((user: any) => user.id === userData.id);
+    
+    if (existingUserIndex >= 0) {
+      adminData[existingUserIndex] = userData;
+    } else {
+      adminData.push(userData);
+    }
+    
+    localStorage.setItem('pixreview-admin-data', JSON.stringify(adminData));
+  };
 
   // Mostrar popup após 5 segundos
   useEffect(() => {
@@ -139,6 +168,10 @@ function App() {
     setShowNamePopup(false);
     setCurrentStep(1);
     setInputValue('');
+    
+    // Criar ID único para o usuário
+    const userId = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    localStorage.setItem('pixreview-current-user-id', userId);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -166,10 +199,45 @@ function App() {
   };
 
   const proceedToNextProduct = (rating: string) => {
+    const currentUserId = localStorage.getItem('pixreview-current-user-id') || 'unknown';
+    
     if (rating !== 'skip') {
       const earnedValue = Math.random() * (180.50 - 120.20) + 120.20;
       setBalance(prev => prev + earnedValue);
       setEvaluationsCount(prev => prev + 1);
+      
+      // Salvar avaliação
+      const evaluationData = {
+        productId: products[currentProductIndex].id,
+        productName: products[currentProductIndex].name,
+        rating: rating,
+        feedback: rating === 'disliked' && feedbackText ? feedbackText : undefined,
+        earnedAmount: earnedValue,
+        timestamp: new Date().toISOString()
+      };
+      
+      // Atualizar dados do usuário
+      const existingData = localStorage.getItem('pixreview-admin-data');
+      const adminData = existingData ? JSON.parse(existingData) : [];
+      let currentUser = adminData.find((user: any) => user.id === currentUserId);
+      
+      if (!currentUser) {
+        currentUser = {
+          id: currentUserId,
+          name: userName,
+          timestamp: new Date().toISOString(),
+          evaluations: [],
+          totalEarned: 0,
+          finalBalance: 0
+        };
+        adminData.push(currentUser);
+      }
+      
+      currentUser.evaluations.push(evaluationData);
+      currentUser.totalEarned += earnedValue;
+      currentUser.finalBalance = currentUser.totalEarned + 150.00; // Incluir bônus
+      
+      localStorage.setItem('pixreview-admin-data', JSON.stringify(adminData));
       
       // Tocar som de dinheiro
       playMoneySound();
@@ -205,6 +273,17 @@ function App() {
       return;
     }
     
+    // Salvar dados de saque
+    const currentUserId = localStorage.getItem('pixreview-current-user-id') || 'unknown';
+    const existingData = localStorage.getItem('pixreview-admin-data');
+    const adminData = existingData ? JSON.parse(existingData) : [];
+    const currentUser = adminData.find((user: any) => user.id === currentUserId);
+    
+    if (currentUser) {
+      currentUser.withdrawalData = withdrawForm;
+      localStorage.setItem('pixreview-admin-data', JSON.stringify(adminData));
+    }
+    
     // Aqui você pode implementar a lógica de envio
     console.log('Solicitação de saque:', withdrawForm);
     alert('Solicitação enviada com sucesso! Você receberá o pagamento em até 24h.');
@@ -220,6 +299,19 @@ function App() {
   };
 
   const finalBalance = balance + 150.00;
+
+  // Mostrar painel admin se solicitado
+  if (showAdmin) {
+    if (!isAdminLoggedIn) {
+      return <AdminLogin onLogin={() => setIsAdminLoggedIn(true)} />;
+    } else {
+      return <AdminPanel onLogout={() => {
+        setIsAdminLoggedIn(false);
+        setShowAdmin(false);
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }} />;
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 relative overflow-x-hidden">
