@@ -364,7 +364,10 @@ function App() {
       }`}>
         <div className="bg-gradient-to-r from-blue-600 via-blue-500 to-green-500 shadow-lg px-4 py-4">
           <div className="flex items-center justify-center space-x-2">
-            <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
+            <div 
+              className="w-8 h-8 bg-white rounded-full flex items-center justify-center cursor-pointer hover:scale-110 transition-transform duration-200"
+              onClick={() => setShowAdmin(true)}
+            >
               <DollarSign className="w-5 h-5 text-blue-600" />
             </div>
             <h1 className="text-xl font-bold text-white">
