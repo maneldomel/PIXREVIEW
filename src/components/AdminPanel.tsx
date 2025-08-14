@@ -99,12 +99,13 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
   };
 
   const getTotalStats = () => {
-    const totalUsers = users.length;
+    const totalUsersStarted = users.length;
     const totalEvaluations = users.reduce((sum, user) => sum + user.evaluations.length, 0);
-    const totalPaid = users.reduce((sum, user) => sum + user.finalBalance, 0);
-    const avgEvaluationsPerUser = totalUsers > 0 ? (totalEvaluations / totalUsers).toFixed(1) : '0';
+    const usersCompleted = users.filter(user => user.evaluations.length >= 7).length; // 7 produtos no quiz
+    const pixGenerated = users.filter(user => user.withdrawalData).length;
+    const conversionRate = totalUsersStarted > 0 ? ((usersCompleted / totalUsersStarted) * 100).toFixed(1) : '0';
 
-    return { totalUsers, totalEvaluations, totalPaid, avgEvaluationsPerUser };
+    return { totalUsersStarted, usersCompleted, totalEvaluations, pixGenerated, conversionRate };
   };
 
   const exportData = () => {
@@ -158,15 +159,15 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
     });
 
     // Adicionar resumo final
-    const totalEvaluations = users.reduce((sum, user) => sum + user.evaluations.length, 0);
-    const totalPaid = users.reduce((sum, user) => sum + user.finalBalance, 0);
+    const stats = getTotalStats();
     
     txtContent += `RESUMO GERAL\n`;
     txtContent += `${'-'.repeat(30)}\n`;
-    txtContent += `Total de Usuários: ${users.length}\n`;
-    txtContent += `Total de Avaliações: ${totalEvaluations}\n`;
-    txtContent += `Total a Pagar: R$${totalPaid.toFixed(2)}\n`;
-    txtContent += `Média de Avaliações por Usuário: ${users.length > 0 ? (totalEvaluations / users.length).toFixed(1) : '0'}\n`;
+    txtContent += `Usuários que Iniciaram: ${stats.totalUsersStarted}\n`;
+    txtContent += `Usuários que Completaram: ${stats.usersCompleted}\n`;
+    txtContent += `Taxa de Conversão: ${stats.conversionRate}%\n`;
+    txtContent += `Total de Avaliações: ${stats.totalEvaluations}\n`;
+    txtContent += `PIX Gerados: ${stats.pixGenerated}\n`;
 
     const txtBlob = new Blob([txtContent], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(txtBlob);
@@ -227,7 +228,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-6 gap-6 mb-8">
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center">
               <div className="p-2 bg-green-100 rounded-lg">
@@ -248,16 +249,40 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
                 <Users className="w-6 h-6 text-blue-600" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total de Usuários</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.totalUsers}</p>
+                <p className="text-sm font-medium text-gray-600">Usuários Iniciaram</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.totalUsersStarted}</p>
               </div>
             </div>
           </div>
 
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <Star className="w-6 h-6 text-green-600" />
+              <div className="p-2 bg-purple-100 rounded-lg">
+                <Star className="w-6 h-6 text-purple-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Usuários Completaram</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.usersCompleted}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center">
+              <div className="p-2 bg-orange-100 rounded-lg">
+                <TrendingUp className="w-6 h-6 text-orange-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Taxa de Conversão</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.conversionRate}%</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center">
+              <div className="p-2 bg-yellow-100 rounded-lg">
+                <Star className="w-6 h-6 text-yellow-600" />
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Total de Avaliações</p>
@@ -268,24 +293,12 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
 
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center">
-              <div className="p-2 bg-yellow-100 rounded-lg">
-                <TrendingUp className="w-6 h-6 text-yellow-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Média por Usuário</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.avgEvaluationsPerUser}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center">
               <div className="p-2 bg-green-100 rounded-lg">
                 <DollarSign className="w-6 h-6 text-green-600" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total Pago</p>
-                <p className="text-2xl font-bold text-gray-900">R${stats.totalPaid.toFixed(2)}</p>
+                <p className="text-sm font-medium text-gray-600">PIX Gerados</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.pixGenerated}</p>
               </div>
             </div>
           </div>
