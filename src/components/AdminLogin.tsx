@@ -8,7 +8,9 @@ interface AdminLoginProps {
 const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [accessKey, setAccessKey] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [showAccessKey, setShowAccessKey] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -20,10 +22,10 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
     // Simular delay de autenticação
     await new Promise(resolve => setTimeout(resolve, 1000));
 
-    if (email === 'admin@pixreview.com' && (password === 'dener1234' || password === '7K9M2P5X8Q1W4R6T')) {
+    if (email === 'admin@pixreview.com' && password === 'dener1234' && accessKey === '7K9M2P5X8Q1W4R6T') {
       onLogin();
     } else {
-      setError('Email ou senha incorretos');
+      setError('Email, senha ou chave de acesso incorretos');
     }
 
     setIsLoading(false);
@@ -72,7 +74,7 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors pr-12"
-                  placeholder="Digite sua senha ou chave"
+                  placeholder="Digite sua senha"
                   required
                 />
                 <button
@@ -81,6 +83,30 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="accessKey" className="block text-sm font-medium text-gray-700 mb-2">
+                Chave de Acesso
+              </label>
+              <div className="relative">
+                <input
+                  id="accessKey"
+                  type={showAccessKey ? 'text' : 'password'}
+                  value={accessKey}
+                  onChange={(e) => setAccessKey(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors pr-12"
+                  placeholder="Digite a chave de acesso"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowAccessKey(!showAccessKey)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  {showAccessKey ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
             </div>
