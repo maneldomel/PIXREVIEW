@@ -671,6 +671,181 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
         </div>
       )}
 
+      {/* Funnel Analysis Modal */}
+      {showFunnelAnalysis && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  📊 Análise de Funil de Conversão
+                </h3>
+                <button
+                  onClick={() => setShowFunnelAnalysis(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6">
+              <div className="space-y-6">
+                {getFunnelData().map((step, index) => (
+                  <div key={step.step} className="relative">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center space-x-3">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold ${
+                          index === 0 ? 'bg-blue-500' :
+                          index === 1 ? 'bg-green-500' :
+                          index === 2 ? 'bg-yellow-500' :
+                          index === 3 ? 'bg-orange-500' :
+                          'bg-red-500'
+                        }`}>
+                          {index + 1}
+                        </div>
+                        <h4 className="text-lg font-semibold text-gray-900">{step.step}</h4>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-2xl font-bold text-gray-900">{step.users}</div>
+                        <div className="text-sm text-gray-500">{step.percentage.toFixed(1)}%</div>
+                      </div>
+                    </div>
+                    
+                    <div className="w-full bg-gray-200 rounded-full h-4 mb-2">
+                      <div 
+                        className={`h-4 rounded-full transition-all duration-500 ${
+                          index === 0 ? 'bg-blue-500' :
+                          index === 1 ? 'bg-green-500' :
+                          index === 2 ? 'bg-yellow-500' :
+                          index === 3 ? 'bg-orange-500' :
+                          'bg-red-500'
+                        }`}
+                        style={{ width: `${step.percentage}%` }}
+                      ></div>
+                    </div>
+                    
+                    {step.dropRate !== undefined && step.dropRate > 0 && (
+                      <div className="text-sm text-red-600 font-medium">
+                        ⚠️ Taxa de abandono: {step.dropRate.toFixed(1)}%
+                      </div>
+                    )}
+                    
+                    {index < getFunnelData().length - 1 && (
+                      <div className="flex justify-center mt-4 mb-2">
+                        <div className="w-0.5 h-8 bg-gray-300"></div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+              
+              <div className="mt-8 p-4 bg-blue-50 rounded-lg">
+                <h4 className="font-semibold text-blue-900 mb-2">💡 Insights do Funil:</h4>
+                <ul className="text-sm text-blue-800 space-y-1">
+                  <li>• <strong>Conversão geral:</strong> {getFunnelData().length > 0 ? getFunnelData()[getFunnelData().length - 1].percentage.toFixed(1) : 0}% dos visitantes finalizam</li>
+                  <li>• <strong>Maior abandono:</strong> {getFunnelData().reduce((max, step) => step.dropRate && step.dropRate > (max.dropRate || 0) ? step : max, { step: 'N/A', dropRate: 0 }).step}</li>
+                  <li>• <strong>Ponto forte:</strong> {getFunnelData().find(step => step.dropRate && step.dropRate < 20)?.step || 'Identificar melhorias'}</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* vturb Settings Modal */}
+      {showVturbSettings && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  🎥 Configurações dos Vídeos vturb
+                </h3>
+                <button
+                  onClick={() => setShowVturbSettings(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6 space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  🎬 Vídeo de Boas-vindas (Tela Inicial)
+                </label>
+                <textarea
+                  value={vturbSettings.welcomeVideoCode}
+                  onChange={(e) => setVturbSettings(prev => ({ ...prev, welcomeVideoCode: e.target.value }))}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 resize-none h-32 font-mono text-sm"
+                  placeholder="Cole aqui o código HTML do vturb para o vídeo de boas-vindas..."
+                />
+                <p className="text-xs text-gray-500 mt-2">
+                  Este vídeo aparece na tela inicial antes do usuário informar o nome
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  📚 Vídeo Explicativo (Como Funciona)
+                </label>
+                <textarea
+                  value={vturbSettings.explanationVideoCode}
+                  onChange={(e) => setVturbSettings(prev => ({ ...prev, explanationVideoCode: e.target.value }))}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 resize-none h-32 font-mono text-sm"
+                  placeholder="Cole aqui o código HTML do vturb para o vídeo explicativo..."
+                />
+                <p className="text-xs text-gray-500 mt-2">
+                  Este vídeo explica como funciona o quiz antes de começar as avaliações
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  🎯 Vídeos Intermediários (Entre Categorias)
+                </label>
+                <textarea
+                  value={vturbSettings.interludeVideoCode}
+                  onChange={(e) => setVturbSettings(prev => ({ ...prev, interludeVideoCode: e.target.value }))}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 resize-none h-32 font-mono text-sm"
+                  placeholder="Cole aqui o código HTML do vturb para os vídeos intermediários..."
+                />
+                <p className="text-xs text-gray-500 mt-2">
+                  Este código será usado para todos os vídeos que aparecem entre as categorias de produtos
+                </p>
+              </div>
+
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <h4 className="font-medium text-yellow-900 mb-2">⚠️ Instruções Importantes:</h4>
+                <ul className="text-sm text-yellow-800 space-y-1">
+                  <li>• Cole o código HTML completo fornecido pelo vturb</li>
+                  <li>• Inclua todas as tags &lt;script&gt; e &lt;div&gt; necessárias</li>
+                  <li>• Os vídeos serão aplicados imediatamente após salvar</li>
+                  <li>• Teste sempre após configurar para garantir funcionamento</li>
+                </ul>
+              </div>
+
+              <div className="flex space-x-3">
+                <button
+                  onClick={() => setShowVturbSettings(false)}
+                  className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors font-medium"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={saveVturbSettings}
+                  className="flex-1 px-4 py-3 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors font-semibold"
+                >
+                  Salvar Configurações
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Facebook Pixel Settings Modal */}
       {showPixelSettings && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">

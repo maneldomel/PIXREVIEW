@@ -235,6 +235,8 @@ function App() {
       localStorage.setItem('pixreview-current-step', '2');
     } else if (showVideoInterlude) {
       setShowVideoInterlude(false);
+      // Recarregar códigos vturb após mudança de vídeo
+      setTimeout(loadVturbCodes, 100);
     }
   };
 
